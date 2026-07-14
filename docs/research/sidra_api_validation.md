@@ -10,7 +10,7 @@ O objetivo deste estudo foi compreender a estrutura das requisições, identific
 
 # Data
 
-14/07/2026
+24/06/2026
 
 ---
 

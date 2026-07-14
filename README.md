@@ -8,7 +8,7 @@ O projeto utiliza Databricks, Apache Spark, Delta Lake e Unity Catalog para cons
 
 # Objetivo
 
-Construir uma plataforma unificada de dados públicos capaz de apoiar análises estratégicas para o varejo brasileiro por meio de uma arquitetura moderna baseada no padrão Lakehouse.
+Construir uma plataforma unificada de dados públicos brasileiros para apoiar decisões de expansão do varejo, inteligência territorial e análises demográficas, utilizando uma arquitetura Lakehouse baseada no padrão Medallion.
 
 Entre as principais perguntas que a plataforma busca responder estão:
 
@@ -25,7 +25,7 @@ Entre as principais perguntas que a plataforma busca responder estão:
 
 A plataforma segue a arquitetura Lakehouse utilizando o padrão Medallion.
 
-```
+```text
                  Fontes Oficiais
                         │
                         ▼
@@ -41,7 +41,38 @@ A plataforma segue a arquitetura Lakehouse utilizando o padrão Medallion.
             Gold (Analytics)
 ```
 
-Atualmente a camada **Bronze** encontra-se implementada, realizando a ingestão dos dados públicos, armazenamento dos arquivos brutos na Landing e persistência em tabelas Delta no Unity Catalog.
+Atualmente encontram-se implementadas:
+
+- Camada Landing para armazenamento dos arquivos brutos;
+- Camada Bronze para persistência dos dados em Delta Lake;
+- Integrações com a API de Localidades do IBGE;
+- Integrações com a API SIDRA do IBGE.
+
+As camadas Silver e Gold serão implementadas nas próximas etapas do projeto.
+
+---
+
+# Arquitetura de Ingestão
+
+Todas as integrações seguem o mesmo padrão de processamento.
+
+```text
+API Pública
+        │
+        ▼
+Landing (JSON)
+        │
+        ▼
+Bronze (Delta Lake)
+        │
+        ▼
+Silver (Curated)
+        │
+        ▼
+Gold (Analytics)
+```
+
+Esse padrão garante consistência entre todas as fontes públicas integradas à plataforma.
 
 ---
 
@@ -51,8 +82,10 @@ Atualmente a camada **Bronze** encontra-se implementada, realizando a ingestão 
 - Apache Spark
 - Delta Lake
 - Unity Catalog
+- Databricks Volumes
 - Python
 - SQL
+- REST APIs
 - Git
 - GitHub
 
@@ -60,7 +93,7 @@ Atualmente a camada **Bronze** encontra-se implementada, realizando a ingestão 
 
 # Estrutura do Projeto
 
-```
+```text
 retail-intelligence-brasil/
 │
 ├── docs/
@@ -74,7 +107,9 @@ retail-intelligence-brasil/
 │   ├── naming_conventions.md
 │   └── roadmap.md
 │
-├── notebooks/
+├── 01_ingestion/
+│   └── ibge/
+│
 ├── sql/
 ├── scripts/
 ├── tests/
@@ -85,9 +120,13 @@ retail-intelligence-brasil/
 
 # Fontes de Dados
 
-Atualmente o projeto contempla integração com as seguintes fontes públicas:
+Atualmente encontram-se implementadas:
 
-- IBGE
+- IBGE Localidades
+- IBGE SIDRA
+
+Planejadas:
+
 - Receita Federal
 - CAGED
 - RAIS
@@ -97,43 +136,114 @@ Atualmente o projeto contempla integração com as seguintes fontes públicas:
 - DATASUS
 - MEC
 
-Novas fontes poderão ser incorporadas conforme a evolução da plataforma.
+As integrações implementadas representam a primeira etapa da plataforma. Novas fontes públicas serão incorporadas conforme a evolução do projeto e das necessidades analíticas.
 
 ---
 
 # Status do Projeto
 
-### Concluído
+## Concluído
 
-- Estrutura do Lakehouse
+- Arquitetura Lakehouse
 - Unity Catalog
-- Camada Landing
-- Camada Bronze
+- Camada Landing implementada
+- Camada Bronze implementada
+- API IBGE Localidades
+- API SIDRA
+- Integração das tabelas SIDRA 4709, 9515 e 9514
 - Padrão de ingestão
-- Padronização dos notebooks
-- Documentação técnica
+- Padrão de documentação
+- Architecture Decision Records (ADRs)
 
-### Em desenvolvimento
+## Em desenvolvimento
 
 - Camada Silver
-- Camada Gold
+- Dimensões de negócio
 - Modelagem analítica
-- Dashboards e casos de negócio
+- Indicadores de expansão
+- Dashboards
 
 ---
 
 # Documentação
+
+A documentação do projeto encontra-se organizada nos seguintes documentos:
 
 - Arquitetura
 - Modelo de Dados
 - Fontes de Dados
 - Convenções de Nomenclatura
 - Metadados
-- ADRs (Architecture Decision Records)
+- Architecture Decision Records (ADRs)
 - Roadmap
 
 ---
 
+# Documentação Arquitetural
+
+O projeto utiliza **Architecture Decision Records (ADRs)** para registrar decisões técnicas relevantes durante sua evolução.
+
+Entre as principais decisões documentadas estão:
+
+- Arquitetura Lakehouse;
+- Padrão de ingestão de dados;
+- Modelagem da camada Bronze;
+- Estratégia de integração com a API SIDRA;
+- Utilização das classificações da API SIDRA;
+- Estratégia de particionamento para tabelas multidimensionais.
+
+---
+
+# Métricas do Projeto
+
+Atualmente a plataforma possui:
+
+- 2 APIs públicas integradas;
+- 8 notebooks de ingestão;
+- 3 tabelas SIDRA implementadas;
+- 5 entidades da API de Localidades;
+- documentação arquitetural baseada em ADRs;
+- arquitetura Lakehouse utilizando Delta Lake e Unity Catalog.
+
+---
+
+# Integrações Implementadas
+
+## API IBGE Localidades
+
+Entidades atualmente implementadas:
+
+- Estados
+- Regiões
+- Municípios
+- Regiões Intermediárias
+- Regiões Imediatas
+
+## API SIDRA
+
+| Tabela | Indicador |
+|---------|-----------|
+| 4709 | População residente, variação absoluta e taxa de crescimento geométrico |
+| 9515 | Índice de envelhecimento, idade mediana e razão de sexo |
+| 9514 | População residente por sexo e grupos de idade |
+
+---
+
+# Próximos Passos
+
+- Implementação da camada Silver
+- Modelagem dimensional
+- Integração de novos indicadores do SIDRA
+- Integração com Receita Federal
+- Integração com RAIS
+- Integração com CAGED
+- Construção da camada Gold
+- Desenvolvimento de dashboards analíticos
+
+---
+
 # Licença
+
+Este projeto é distribuído sob a licença MIT.
 
 MIT License.

@@ -61,4 +61,4 @@ Esse padrão será utilizado por todas as futuras integrações da plataforma.
 
 # Data
 
-14/07/2026
+02/06/2026

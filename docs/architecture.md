@@ -2,21 +2,22 @@
 
 ## Visão Geral
 
-A plataforma Retail Intelligence Brasil foi desenvolvida utilizando a arquitetura Lakehouse, adotando o padrão Medallion para organizar o ciclo de vida dos dados.
+A plataforma **Retail Intelligence Brasil** foi desenvolvida utilizando arquitetura **Lakehouse**, adotando o padrão **Medallion** para organizar o ciclo de vida dos dados.
 
 O objetivo é centralizar dados públicos brasileiros, padronizar sua ingestão e disponibilizar informações confiáveis para aplicações de Business Intelligence, Analytics, Ciência de Dados e Inteligência Territorial.
 
-A plataforma utiliza Databricks, Apache Spark, Delta Lake e Unity Catalog como base para armazenamento, processamento e governança dos dados.
+A plataforma utiliza **Databricks**, **Apache Spark**, **Delta Lake**, **Unity Catalog** e **Databricks Volumes** como base para armazenamento, processamento e governança dos dados.
 
 ---
 
 # Arquitetura Geral
 
-```
+```text
                     Fontes Públicas
 
-     IBGE • Receita Federal • CAGED • RAIS
- Banco Central • OpenStreetMap • Outras APIs
+         IBGE Localidades • IBGE SIDRA
+ Receita Federal • CAGED • RAIS • Banco Central
+ OpenStreetMap • DATASUS • MEC • ANP
                         │
                         ▼
                Landing (Volumes)
@@ -35,20 +36,29 @@ A plataforma utiliza Databricks, Apache Spark, Delta Lake e Unity Catalog como b
       Data Marts e Produtos Analíticos
                         │
                         ▼
-     Dashboards • Analytics • Estudos
+ Business Intelligence • Analytics • Ciência de Dados
 ```
 
 ---
 
 # Fluxo de Ingestão
 
-Cada fonte segue um processo padronizado de ingestão composto por duas etapas.
+Todas as fontes públicas seguem um processo padronizado composto por duas etapas.
 
-1. Download dos dados da fonte oficial e armazenamento do arquivo bruto na Landing.
+## 1. Extração
 
-2. Leitura do arquivo bruto, criação do DataFrame Spark e persistência em tabelas Delta na camada Bronze.
+Os dados são consumidos diretamente da fonte oficial e armazenados na camada Landing em formato bruto (JSON).
 
-Esse padrão garante reprodutibilidade, rastreabilidade e desacoplamento entre extração e processamento.
+## 2. Persistência
+
+Os arquivos da Landing são lidos pelo Apache Spark e persistidos em tabelas Delta na camada Bronze, preservando a estrutura original da fonte.
+
+Esse padrão garante:
+
+- reprodutibilidade;
+- rastreabilidade;
+- desacoplamento entre extração e processamento;
+- facilidade de reprocessamento.
 
 ---
 
@@ -56,26 +66,33 @@ Esse padrão garante reprodutibilidade, rastreabilidade e desacoplamento entre e
 
 A Landing é responsável por armazenar os arquivos exatamente como foram disponibilizados pelas fontes oficiais.
 
-Características:
+## Características
 
 - Arquivos JSON originais
 - Organização por fonte e data de carga
-- Sem qualquer transformação
+- Sem transformações
 - Base para reprocessamentos
 - Auditoria das cargas
 
-Exemplo:
+### Estrutura
 
-```
+```text
 /Volumes/retail_intelligence/
-└── bronze
-    └── landing
-        └── ibge
-            ├── estados/
-            ├── municipios/
-            ├── regioes/
-            ├── regioes_intermediarias/
-            └── regioes_imediatas/
+└── bronze/
+    └── landing/
+        └── ibge/
+            ├── localidades/
+            │   ├── estados/
+            │   ├── municipios/
+            │   ├── regioes/
+            │   ├── regioes_intermediarias/
+            │   └── regioes_imediatas/
+            │
+            └── sidra/
+                └── demografia/
+                    ├── populacao/
+                    ├── indicadores_demograficos/
+                    └── populacao_sexo_idade/
 ```
 
 ---
@@ -84,40 +101,48 @@ Exemplo:
 
 A Bronze representa a primeira camada estruturada do Lakehouse.
 
-Nessa etapa os arquivos da Landing são convertidos para tabelas Delta, preservando integralmente os dados de origem.
+Nessa etapa os arquivos da Landing são convertidos para tabelas Delta preservando integralmente os dados de origem.
 
-Características:
+## Características
 
-- Dados brutos
+- Dados RAW
 - Sem regras de negócio
-- Schema definido
+- Estrutura idêntica à origem
 - Persistência em Delta Lake
-- Histórico das cargas
 - Base para construção da Silver
 
-Atualmente encontram-se implementadas as tabelas:
+## Tabelas implementadas
+
+### API IBGE Localidades
 
 - ibge_estados_raw
-- ibge_municipios_raw
 - ibge_regioes_raw
+- ibge_municipios_raw
 - ibge_regioes_intermediarias_raw
 - ibge_regioes_imediatas_raw
+
+### API SIDRA
+
+- ibge_sidra_populacao_raw
+- ibge_sidra_indicadores_demograficos_raw
+- ibge_sidra_populacao_sexo_idade_raw
 
 ---
 
 # Silver
 
-A Silver será responsável pela padronização e integração dos dados provenientes da Bronze.
+A camada Silver será responsável pela padronização e integração dos dados provenientes da Bronze.
 
-Principais atividades:
+Principais responsabilidades:
 
-- Limpeza
 - Conversão de tipos
-- Padronização
+- Padronização de nomenclaturas
+- Limpeza dos dados
 - Deduplicação
-- Enriquecimento
+- Integração entre APIs
 - Criação de dimensões
-- Integração entre diferentes fontes
+- Criação das tabelas fato
+- Aplicação de regras de negócio
 
 ---
 
@@ -131,13 +156,14 @@ Serão disponibilizados:
 - Indicadores
 - Métricas
 - Views Analíticas
-- Camadas para Business Intelligence
+- Modelos dimensionais
+- Produtos para Business Intelligence
 
 ---
 
 # Organização do Unity Catalog
 
-```
+```text
 retail_intelligence
 
 ├── bronze
@@ -162,8 +188,12 @@ retail_intelligence
 - Apache Spark
 - Delta Lake
 - Unity Catalog
+- Databricks Volumes
 - Python
 - SQL
+- REST APIs
+- Git
+- GitHub
 
 ---
 
@@ -172,6 +202,7 @@ retail_intelligence
 A arquitetura foi construída seguindo os seguintes princípios:
 
 - Fonte única da verdade (Single Source of Truth)
+- Arquitetura Medallion
 - Reprodutibilidade
 - Escalabilidade
 - Governança de dados
@@ -179,3 +210,5 @@ A arquitetura foi construída seguindo os seguintes princípios:
 - Baixo acoplamento entre etapas
 - Alta rastreabilidade
 - Padronização da ingestão
+- Preservação dos dados RAW na Bronze
+- Separação entre ingestão, transformação e consumo

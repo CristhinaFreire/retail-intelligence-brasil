@@ -10,14 +10,14 @@ Aceito
 
 A tabela SIDRA 9514 (População residente por sexo, idade e forma de declaração da idade) foi selecionada para compor a camada Bronze do projeto Retail Intelligence Brasil.
 
-Durante a fase de pesquisa (Spikes Técnicos) foram realizados testes de consumo da API do SIDRA para compreender sua estrutura e limitações.
+Durante a fase de pesquisa (Spikes Técnicos) foram realizados testes de consumo da API do SIDRA para compreender sua estrutura, parâmetros de consulta e limitações operacionais.
 
 Foram identificadas as seguintes classificações da tabela:
 
 | Classificação | Código |
 |---------------|--------|
 | Sexo | C2 |
-| Idade | C287 |
+| Grupo de idade | C287 |
 | Forma de declaração da idade | C286 |
 
 Também foi validado que a API permite expandir classificações utilizando o parâmetro:
@@ -42,7 +42,7 @@ retornando:
 
 ## Problema
 
-Ao solicitar todas as categorias da classificação de idade:
+Ao solicitar todas as categorias da classificação Grupo de idade:
 
 ```
 https://apisidra.ibge.gov.br/values/t/9514/n6/all/c287/all
@@ -79,7 +79,7 @@ Extrair todas as idades individuais (0 até 100+).
 
 ### Opção 2
 
-Extrair apenas os grupos quinquenais (5 em 5 anos).
+Realizar o particionamento utilizando os grupos etários.
 
 Exemplo:
 
@@ -92,24 +92,18 @@ Exemplo:
 
 **Vantagens**
 
-- Aproximadamente 22 categorias.
-- Requisições pequenas.
+- Requisições menores.
 - Não excede o limite da API.
-- Modelo adequado para análises de varejo.
+- Processo escalável.
+- Mantém nível de detalhamento adequado para análises demográficas e de varejo.
 
 **Desvantagens**
 
-- Perde a granularidade por idade individual.
+- Necessidade de consolidar múltiplas respostas da API.
 
 ---
 
 ## Decisão
-
-A tabela 9514 será extraída utilizando apenas as faixas etárias agregadas (grupos quinquenais).
-
-Cada faixa etária será consultada individualmente através da API do SIDRA.
-
-Após a extração, todos os resultados serão consolidados em uma única tabela Bronze.
 
 A classificação Sexo será expandida utilizando:
 
@@ -117,50 +111,86 @@ A classificação Sexo será expandida utilizando:
 c2/all
 ```
 
-A classificação Idade será consultada utilizando apenas os códigos correspondentes aos grupos quinquenais.
+A classificação Grupo de idade (C287) será utilizada como estratégia de particionamento da extração.
+
+Serão realizadas 21 requisições, uma para cada grupo etário.
+
+Após a conclusão das requisições, todos os resultados serão consolidados em um único conjunto de dados antes da persistência na Landing e na Bronze.
 
 ---
 
 ## Justificativa
 
-O objetivo do projeto é apoiar análises de expansão de varejo.
+O objetivo do projeto é apoiar análises de expansão do varejo.
 
 Para esse cenário, indicadores como:
 
-- população jovem;
+- distribuição da população por sexo;
 - população economicamente ativa;
-- população idosa;
-- distribuição por sexo;
+- envelhecimento populacional;
+- concentração de faixas etárias;
 
-são mais relevantes do que a população em cada idade individual.
+são mais relevantes do que a população por idade individual.
 
-A utilização de grupos quinquenais reduz significativamente o volume de dados sem perda relevante para os casos de uso previstos.
+A utilização dos grupos etários reduz significativamente o volume de dados sem perda relevante para os casos de uso previstos.
 
-Além disso, essa abordagem respeita as limitações operacionais da API SIDRA e simplifica o processamento nas camadas Bronze, Silver e Gold.
+Além disso, essa estratégia respeita as limitações da API SIDRA, simplifica a implementação e poderá ser reutilizada em futuras tabelas multidimensionais.
+
+---
+
+## Arquitetura da solução
+
+A implementação segue o fluxo abaixo:
+
+```
+API SIDRA
+        │
+        ▼
+21 requisições (uma por grupo etário)
+        │
+        ▼
+Consolidação em memória
+        │
+        ▼
+Arquivo JSON único na Landing
+        │
+        ▼
+Leitura pelo Spark
+        │
+        ▼
+Persistência RAW na Bronze (Delta)
+```
+
+Essa abordagem mantém o padrão arquitetural utilizado pelos demais notebooks de ingestão do projeto, preservando um único arquivo JSON por execução e uma Bronze no formato RAW.
 
 ---
 
 ## Impacto
 
-A Bronze armazenará dados no formato:
+A Bronze armazenará os dados preservando exatamente a estrutura retornada pela API do SIDRA.
 
-| Município | Ano | Sexo | Faixa Etária | População |
-|------------|------|--------|----------------|------------|
+As transformações semânticas, renomeação de colunas, conversão de tipos e regras de negócio serão realizadas posteriormente na camada Silver.
 
-Esse modelo facilitará a construção de indicadores demográficos utilizados na priorização de municípios para expansão de lojas e demais análises do projeto Retail Intelligence Brasil.
+Essa decisão mantém a Bronze aderente ao padrão RAW adotado no projeto.
 
 ---
 
 ## Evidências
 
-Spike realizado:
+### Spikes realizados
 
+- 99_spike_sidra_api
+- 99_spike_sidra_classificacoes
 - 99_spike_sidra_9514
 
-Principais validações:
+### Validações realizadas
 
-- consumo da API;
-- descoberta das classificações;
-- expansão da classificação Sexo;
-- validação do limite de 50.000 registros da API;
-- definição da estratégia de particionamento por grupos etários.
+- consumo da API SIDRA;
+- identificação das classificações da tabela 9514;
+- validação dos parâmetros `c` e `d`;
+- expansão da classificação Sexo (`c2/all`);
+- validação do limite de aproximadamente 50.000 registros por requisição;
+- definição da estratégia de particionamento por grupos etários;
+- consolidação das respostas em um único conjunto de dados;
+- persistência do JSON na Landing;
+- persistência RAW na Bronze.

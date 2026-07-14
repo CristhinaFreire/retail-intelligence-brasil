@@ -6,60 +6,79 @@ Este documento apresenta a evolução planejada da plataforma Retail Intelligenc
 
 # Fase 1 — Fundação da Plataforma
 
-Status: Concluído
+**Status:** Concluído
+
+## Entregas
 
 - Estrutura do repositório
 - Configuração do Databricks
 - Configuração do Unity Catalog
 - Organização das camadas do Lakehouse
+- Definição da arquitetura Medallion
 - Criação da documentação técnica
 - Definição dos padrões de nomenclatura
+- Estrutura inicial dos ADRs
 
 ---
 
 # Fase 2 — Ingestão de Dados (Bronze)
 
-Status: Concluído
+**Status:** Concluído
 
-## IBGE
+## API IBGE Localidades
+
+### Entidades implementadas
 
 - Estados
-- Municípios
 - Regiões
+- Municípios
 - Regiões Intermediárias
 - Regiões Imediatas
 
-### Funcionalidades
+## API SIDRA
 
-- Download via API REST
+### Tabelas implementadas
+
+- 4709 — População residente, variação absoluta e taxa de crescimento geométrico
+- 9515 — Índice de envelhecimento, idade mediana e razão de sexo
+- 9514 — População residente por sexo e grupos de idade
+
+### Entregas
+
+- Consumo de APIs REST
 - Persistência dos arquivos JSON na Landing
 - Conversão para DataFrames Spark
 - Persistência em tabelas Delta
 - Padronização dos notebooks
+- Padronização das estruturas Bronze
+- Estratégia de ingestão para tabelas multidimensionais
 - Validação das cargas
+- Documentação arquitetural utilizando ADRs
 
 ---
 
 # Fase 3 — Camada Silver
 
-Status: Em desenvolvimento
+**Status:** Planejado
 
-Objetivos:
+## Objetivos
 
-- Padronização dos dados
+- Padronização dos nomes das colunas
+- Conversão de tipos de dados
 - Normalização das estruturas
-- Criação de chaves técnicas
-- Tratamento de duplicidades
-- Integração entre fontes públicas
-- Criação das primeiras dimensões
+- Criação de chaves substitutas (Surrogate Keys)
+- Integração entre Localidades e SIDRA
+- Criação das dimensões
+- Criação das tabelas fato
+- Tratamento de qualidade dos dados
 
 ---
 
 # Fase 4 — Novas Fontes
 
-Status: Planejado
+**Status:** Planejado
 
-Integração com:
+## Integrações previstas
 
 - Receita Federal
 - CAGED
@@ -74,25 +93,43 @@ Integração com:
 
 # Fase 5 — Camada Gold
 
-Status: Planejado
+**Status:** Planejado
 
-Desenvolvimento de:
+## Objetivos
 
 - Data Marts
-- Indicadores de mercado
-- Indicadores socioeconômicos
-- Indicadores de expansão
 - Modelo dimensional
+- Indicadores demográficos
+- Indicadores socioeconômicos
+- Indicadores econômicos
+- Indicadores de expansão do varejo
 - Views analíticas
 
 ---
 
 # Fase 6 — Analytics
 
-Status: Planejado
+**Status:** Planejado
 
-- Dashboards em Power BI
+## Entregas
+
+- Dashboards Power BI
 - Estudos de expansão comercial
-- Análises geoespaciais
 - Inteligência territorial
+- Análises geoespaciais
 - Casos de uso para varejo
+- Modelos preditivos para expansão de lojas
+
+---
+
+# Próximas Implementações
+
+As próximas tabelas priorizadas para integração via SIDRA são:
+
+- População por grupos de idade (1522)
+- População por situação do domicílio
+- População por cor ou raça
+- Pessoas com deficiência
+- População diagnosticada com autismo
+
+Essas integrações ampliarão o conjunto de indicadores demográficos utilizados pela plataforma para análises de potencial de mercado e expansão do varejo.

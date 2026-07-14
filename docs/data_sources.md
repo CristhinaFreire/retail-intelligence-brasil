@@ -4,7 +4,7 @@ Este documento cataloga as fontes públicas utilizadas pela plataforma Retail In
 
 | Fonte | Domínio | Forma de Acesso | Status |
 |--------|----------|-----------------|--------|
-| IBGE | Demografia e Divisão Territorial | API REST | Implementado |
+| IBGE | Demografia, Divisão Territorial e Indicadores Estatísticos | API REST | Implementado |
 | Receita Federal | Empresas | Base Pública | Planejado |
 | CAGED | Emprego | Download de Arquivos | Planejado |
 | RAIS | Mercado de Trabalho | Download de Arquivos | Planejado |
@@ -20,9 +20,18 @@ Este documento cataloga as fontes públicas utilizadas pela plataforma Retail In
 
 ## IBGE
 
-Atualmente a plataforma possui integração implementada com a API de Localidades do IBGE.
+Atualmente a plataforma possui integração implementada com duas APIs públicas do IBGE:
+
+- API de Localidades
+- API SIDRA
 
 Os dados são obtidos por meio de chamadas HTTP, armazenados inicialmente na camada Landing em formato JSON e posteriormente persistidos na Bronze em tabelas Delta.
+
+---
+
+## API de Localidades
+
+Responsável pelas informações territoriais utilizadas como dimensões da plataforma.
 
 ### Entidades implementadas
 
@@ -36,16 +45,32 @@ Os dados são obtidos por meio de chamadas HTTP, armazenados inicialmente na cam
 
 ---
 
+## API SIDRA
+
+Responsável pelos indicadores demográficos utilizados nas análises de expansão do varejo.
+
+### Tabelas implementadas
+
+| Tabela SIDRA | Descrição | Tabela Bronze |
+|--------------|-----------|---------------|
+| 4709 | População residente, variação absoluta e taxa de crescimento geométrico | `ibge_sidra_populacao_raw` |
+| 9515 | Índice de envelhecimento, idade mediana e razão de sexo | `ibge_sidra_indicadores_demograficos_raw` |
+| 9514 | População residente por sexo e grupos de idade | `ibge_sidra_populacao_sexo_idade_raw` |
+
+---
+
 # Próximas Fontes
 
-As demais integrações serão implementadas conforme o roadmap do projeto. Cada fonte possuirá documentação específica contendo:
+As demais integrações serão implementadas conforme o roadmap do projeto.
 
-- Objetivo
-- Origem dos dados
-- Forma de acesso
-- Periodicidade
-- Granularidade
-- Estrutura dos dados
-- Dicionário de Dados
-- Pipeline de ingestão
-- Casos de uso
+Cada nova fonte deverá possuir documentação própria contendo:
+
+- objetivo;
+- origem dos dados;
+- forma de acesso;
+- periodicidade;
+- granularidade;
+- estrutura dos dados;
+- pipeline de ingestão;
+- dicionário de dados;
+- casos de uso.
