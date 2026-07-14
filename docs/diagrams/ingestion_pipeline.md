@@ -3,22 +3,26 @@
 ```mermaid
 flowchart LR
 
-    API["API Pública"]
+    A["Fontes Públicas<br/>IBGE Localidades<br/>IBGE SIDRA<br/>Receita Federal<br/>Outras APIs"]
 
-    LANDING["Landing
-    JSON RAW"]
+    B["Landing<br/>Databricks Volumes<br/>Arquivos JSON RAW"]
 
-    BRONZE["Bronze
-    Delta Lake"]
+    C["Bronze<br/>Delta Lake"]
 
-    SILVER["Silver
-    Curated"]
+    D["Silver<br/>Em construção"]
 
-    GOLD["Gold
-    Analytics"]
+    E["Gold<br/>Em construção"]
 
-    API --> LANDING
-    LANDING --> BRONZE
-    BRONZE --> SILVER
-    SILVER --> GOLD
+    F["Power BI<br/>Analytics"]
+
+    A --> B
+    B --> C
+    C -. Futuro .-> D
+    D -. Futuro .-> E
+    E -.-> F
+
+    UC["Unity Catalog"]
+    UC -. Governança .-> C
+    UC -.-> D
+    UC -.-> E
 ```
