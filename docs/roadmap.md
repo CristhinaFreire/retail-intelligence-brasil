@@ -1,72 +1,98 @@
 # Roadmap
 
-## Fase 1
-
-Infraestrutura
-
-- Configuração do Databricks
-- Unity Catalog
-- Medallion Architecture
+Este documento apresenta a evolução planejada da plataforma Retail Intelligence Brasil.
 
 ---
 
-## Fase 2
+# Fase 1 — Fundação da Plataforma
 
-IBGE
+Status: Concluído
+
+- Estrutura do repositório
+- Configuração do Databricks
+- Configuração do Unity Catalog
+- Organização das camadas do Lakehouse
+- Criação da documentação técnica
+- Definição dos padrões de nomenclatura
+
+---
+
+# Fase 2 — Ingestão de Dados (Bronze)
+
+Status: Concluído
+
+## IBGE
 
 - Estados
 - Municípios
-- População
-- Área Territorial
-- PIB Municipal
+- Regiões
+- Regiões Intermediárias
+- Regiões Imediatas
+
+### Funcionalidades
+
+- Download via API REST
+- Persistência dos arquivos JSON na Landing
+- Conversão para DataFrames Spark
+- Persistência em tabelas Delta
+- Padronização dos notebooks
+- Validação das cargas
 
 ---
 
-## Fase 3
+# Fase 3 — Camada Silver
 
-Mercado de Trabalho
+Status: Em desenvolvimento
 
-- CAGED
-- RAIS
+Objetivos:
+
+- Padronização dos dados
+- Normalização das estruturas
+- Criação de chaves técnicas
+- Tratamento de duplicidades
+- Integração entre fontes públicas
+- Criação das primeiras dimensões
 
 ---
 
-## Fase 4
+# Fase 4 — Novas Fontes
 
-Empresas
+Status: Planejado
+
+Integração com:
 
 - Receita Federal
-- CNAEs
-
----
-
-## Fase 5
-
-Economia
-
+- CAGED
+- RAIS
 - Banco Central
-- IPCA
-- SELIC
-
----
-
-## Fase 6
-
-Geoespacial
-
 - OpenStreetMap
-- Malha Viária
-- Aeroportos
-- Portos
+- DATASUS
+- MEC
+- ANP
 
 ---
 
-## Fase 7
+# Fase 5 — Camada Gold
 
-Produtos Analíticos
+Status: Planejado
 
-- Potencial de Consumo
-- Índice de Expansão
-- Perfil Demográfico
-- Competitividade
-- Inteligência Territorial
+Desenvolvimento de:
+
+- Data Marts
+- Indicadores de mercado
+- Indicadores socioeconômicos
+- Indicadores de expansão
+- Modelo dimensional
+- Views analíticas
+
+---
+
+# Fase 6 — Analytics
+
+Status: Planejado
+
+- Dashboards em Power BI
+- Estudos de expansão comercial
+- Análises geoespaciais
+- Inteligência territorial
+- Casos de uso para varejo
